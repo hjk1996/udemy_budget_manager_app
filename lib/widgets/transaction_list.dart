@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:flutter_complete_guide/models/transaction.dart';
+import '../models/transaction.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> userTransactions;
@@ -38,7 +38,8 @@ class TransactionList extends StatelessWidget {
                 )),
                 padding: EdgeInsets.all(10),
                 child: Text(
-                  '\$${userTransactions[idx].amount}',
+                  // toStringAsFixed는 소수점 둘째 자리까지 반올림한 숫자를 String을 반환함.
+                  '\$${userTransactions[idx].amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
