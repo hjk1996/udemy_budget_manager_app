@@ -11,6 +11,10 @@ class TransactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    userTransactions.sort(
+      (a, b) => a.date.compareTo(b.date),
+    );
+
     return Container(
       height: 450,
       // ListView는 Column과 SingleChildScrollView가 합쳐진 위젯이라고 생각하면 편함.
