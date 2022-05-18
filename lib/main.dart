@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:udemy_budget_tracking_app/widgets/new_transaction.dart';
-import 'package:udemy_budget_tracking_app/widgets/transaction_list.dart';
 
+import './widgets/chart.dart';
+import './widgets/new_transaction.dart';
+import './widgets/transaction_list.dart';
 import './models/transaction.dart';
 
 void main() => runApp(MyApp());
@@ -11,6 +12,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Expense Tracking App',
+      // theme arg를 통해서 app 전체의 테마를 정해줄 수 있음.
+      // 색상, 폰트 등등..
+      theme: ThemeData(
+          // primarySwatch는 theme의 색상으로 사용할 색깔의 집합이라고 볼 수 있음.
+          // theme 색상을 변경하면 맞물려서 설정한 색이 모두 변경됨.
+          primarySwatch: Colors.blue,
+          // colorScheme을 통해 예비색을 설정할 수 있음.
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.red),
+          errorColor: Colors.red,
+          // pubspec.yaml 파일에서 설정해준 font를 사용할 수 있음.
+          fontFamily: 'Quicksand',
+          textTheme: ThemeData.light().textTheme.copyWith(
+              titleMedium: TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18)),
+          // appBar에 대한 theme만 별도로 설정해줄 수도 있음.
+          appBarTheme: AppBarTheme(
+              titleTextStyle: TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold))),
+
       home: MyHomePage(),
     );
   }
@@ -22,27 +46,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _userTransactions = [
-    Transaction(
-      id: 't1',
-      title: 'New Shoes',
-      amount: 55.22,
-      date: DateTime.now(),
-    ),
-    Transaction(
-      id: 't2',
-      title: 'Grocery',
-      amount: 16.43,
-      date: DateTime.now(),
-    ),
-  ];
+  final List<Transaction> _userTransactions = [];
 
-  void _addNewTransaction(String title, double amount) {
+  // 최근 일주일에 추가된 Transaction들
+  List<Transaction> get _recentTransactions {
+    // True를 반환하는 tx로만 리스트를 필터링함.
+    return _userTransactions.where((tx) {
+      // 지난 일주일의 Transaction인지 확인함.
+      return tx.date.isAfter(DateTime.now().subtract(Duration(days: 7)));
+    }).toList();
+  }
+
+  void _addNewTransaction(String title, double amount, DateTime chosenDate) {
     final newTx = Transaction(
         id: DateTime.now().toString(),
         title: title,
         amount: amount,
-        date: DateTime.now());
+        date: chosenDate);
     setState(() {
       _userTransactions.add(newTx);
     });
@@ -61,11 +81,19 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((transaction) => transaction.id == id);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flutter App'),
+        title: Text(
+          'Expense Tracking App',
+        ),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add),
@@ -81,19 +109,8 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Container(
-              width: double.infinity,
-              // Card의 크기는 parent의 크기가 명백하게 설정되어 있지 않으면,
-              // child의 크기에 따라 결정된다.
-              child: Card(
-                color: Colors.blue,
-                child: Container(
-                  child: Text('Chart!'),
-                ),
-                elevation: 5,
-              ),
-            ),
-            TransactionList(_userTransactions),
+            Chart(_recentTransactions),
+            TransactionList(_userTransactions, _deleteTransaction),
           ],
         ),
       ),
